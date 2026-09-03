@@ -8,6 +8,7 @@ import { clearAllHistory, deleteHistoryItem, getHistoryItems, saveHistoryItem, t
 import GradientWaves from '@/components/GradientWaves'
 import AudioPlayer from '@/components/AudioPlayer'
 import HistoryView from '@/components/HistoryView'
+import AiLoader from '@/components/ui/ai-loader'
 
 const faqs = [
   ['What audio formats are supported?', 'VerifyVoice accepts MP3, WAV, M4A, FLAC, and OGG files up to 50MB.'],
@@ -92,6 +93,27 @@ export default function Page() {
     }
     return false
   }
+
+  const SCANNING_MESSAGES = [
+    'Mapping voice signatures...',
+    'Analyzing spectral patterns...',
+    'Examining phase consistency...',
+    'Checking temporal characteristics...',
+    'Comparing voice fingerprints...',
+    'Finalizing authenticity score...',
+  ]
+  const [scanningMsgIndex, setScanningMsgIndex] = useState(0)
+
+  useEffect(() => {
+    if (status !== 'analyzing') {
+      setScanningMsgIndex(0)
+      return
+    }
+    const interval = setInterval(() => {
+      setScanningMsgIndex((prev) => (prev + 1) % SCANNING_MESSAGES.length)
+    }, 450)
+    return () => clearInterval(interval)
+  }, [status])
 
   return (
     <main className="flex min-h-[100svh] w-full flex-col bg-background p-4 text-foreground">
@@ -264,15 +286,18 @@ export default function Page() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="upload-zone justify-center"
+                      className="upload-zone justify-center py-8 min-h-[250px]"
                     >
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="flex items-center gap-2.5 text-sm font-medium text-accent-bright">
-                          <span className="loading-dot" /> Mapping voice signatures...
+                      <div className="flex flex-col items-center justify-center gap-6 text-center">
+                        <AiLoader size={90} text={SCANNING_MESSAGES[scanningMsgIndex]} />
+                        <div className="flex flex-col items-center gap-1 mt-4">
+                          <span className="text-sm font-semibold tracking-tight text-accent-bright">
+                            {SCANNING_MESSAGES[scanningMsgIndex]}
+                          </span>
+                          <p className="text-xs text-secondary">
+                            Comparing spectral, phase, and timing patterns
+                          </p>
                         </div>
-                        <p className="text-xs text-secondary">
-                          Comparing spectral, phase, and timing patterns
-                        </p>
                       </div>
                     </motion.div>
                   )}
